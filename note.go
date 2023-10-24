@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,11 +11,58 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Note struct {
+func read(fileName string) Note {
+	file, err := os.Open(fileName)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	readingMetadata := false
+
+	metadata := []string{}
+	content := []string{}
+
+	for scanner.Scan() {
+		if scanner.Text() == "---" {
+			readingMetadata = true
+			continue
+		}
+
+		if readingMetadata {
+			metadata = append(metadata, scanner.Text())
+		}
+
+		if !readingMetadata {
+			content = append(content, scanner.Text())
+		}
+	}
+
+	meta := Meta{}
+	yamlErr := yaml.Unmarshal([]byte(strings.Join(metadata, "\n")), meta)
+
+	if yamlErr != nil {
+		panic(err)
+	}
+
+	return Note{
+		Body: strings.Join(content, "\n"),
+		Meta: meta,
+	}
+}
+
+type Meta struct {
 	Title     string
-	Body      string
 	Tags      []string
 	CreatedAt time.Time
+}
+
+type Note struct {
+	Body string
+	Meta Meta
 }
 
 func (note Note) create() (path string, err error) {
@@ -38,13 +86,13 @@ func (note Note) create() (path string, err error) {
 }
 
 func (note Note) write(writer io.Writer) error {
-	yamlData, err := yaml.Marshal(&note)
+	yamlData, err := yaml.Marshal(&note.Meta)
 
 	if err != nil {
 		return err
 	}
 
-	writer.Write([]byte("# " + note.Title + "\n"))
+	writer.Write([]byte("# " + note.Meta.Title + "\n"))
 	writer.Write([]byte("\n"))
 	writer.Write([]byte(note.Body + "\n"))
 	writer.Write([]byte("\n"))
@@ -54,11 +102,11 @@ func (note Note) write(writer io.Writer) error {
 }
 
 func (note Note) slug() string {
-	return strings.ToLower(strings.ReplaceAll(note.Title, " ", "-"))
+	return strings.ToLower(strings.ReplaceAll(note.Meta.Title, " ", "-"))
 }
 
 func (note Note) fileName() string {
-	datePrefix := note.CreatedAt.Format("2006/01/02")
+	datePrefix := note.Meta.CreatedAt.Format("2006/01/02")
 
 	return os.Getenv("ZET_HOME") +
 		"/content/" +

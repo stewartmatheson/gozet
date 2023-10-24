@@ -1,16 +1,21 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 )
 
-func main() {
+func createTestNote() {
 	note := Note{
-		Title:     "This is a sample note",
-		Tags:      []string{"Note", "Test", "There", "Are", "Lots"},
-		Body:      "",
-		CreatedAt: time.Now(),
+		Body: "",
+		Meta: Meta{
+			Tags:      []string{"Note", "Test", "There", "Are", "Lots"},
+			Title:     "This is a sample note",
+			CreatedAt: time.Now(),
+		},
 	}
 
 	fileName, err := note.create()
@@ -20,4 +25,27 @@ func main() {
 	}
 
 	fmt.Println(fileName)
+}
+
+func main() {
+	/*
+			reader := bufio.NewReader(os.Stdin)
+			fileName, err := reader.ReadString('\n')
+
+			if err != nil {
+				panic(err)
+			}
+
+			read(fileName)
+		  createTestNote()
+	*/
+
+	reader := bufio.NewReader(os.Stdin)
+	fileName, err := reader.ReadString('\n')
+	if err != nil {
+		panic(err)
+	}
+
+	note := read(strings.TrimSuffix(fileName, "\n"))
+	fmt.Print(render(note))
 }
