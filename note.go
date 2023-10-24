@@ -42,10 +42,10 @@ func read(fileName string) Note {
 	}
 
 	meta := Meta{}
-	yamlErr := yaml.Unmarshal([]byte(strings.Join(metadata, "\n")), meta)
+	yamlErr := yaml.Unmarshal([]byte(strings.Join(metadata, "\n")), &meta)
 
 	if yamlErr != nil {
-		panic(err)
+		panic(yamlErr)
 	}
 
 	return Note{

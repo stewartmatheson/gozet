@@ -7,7 +7,8 @@ import (
 )
 
 func render(note Note) []byte {
-	p := parser.New()
+	extensions := parser.CommonExtensions
+	p := parser.NewWithExtensions(extensions)
 	doc := p.Parse([]byte(note.Body))
 	opts := html.RendererOptions{}
 	renderer := html.NewRenderer(opts)

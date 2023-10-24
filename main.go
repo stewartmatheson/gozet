@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -28,24 +27,24 @@ func createTestNote() {
 }
 
 func main() {
-	/*
-			reader := bufio.NewReader(os.Stdin)
-			fileName, err := reader.ReadString('\n')
+	args := os.Args[1:]
 
-			if err != nil {
-				panic(err)
-			}
-
-			read(fileName)
-		  createTestNote()
-	*/
-
-	reader := bufio.NewReader(os.Stdin)
-	fileName, err := reader.ReadString('\n')
-	if err != nil {
-		panic(err)
+	if len(args) < 1 {
+		log.Fatalln("Must pass at least one arg")
+		os.Exit(1)
 	}
 
-	note := read(strings.TrimSuffix(fileName, "\n"))
-	fmt.Print(render(note))
+	if args[0] == "render" && len(args) > 1 {
+		note := read(args[1])
+		fmt.Print(string(render(note)))
+		os.Exit(0)
+	}
+
+	if args[0] == "create" {
+		createTestNote()
+		os.Exit(0)
+	}
+
+	log.Fatalln("Unknown Param " + args[0])
+	os.Exit(1)
 }
