@@ -108,7 +108,7 @@ func (note Note) slug() string {
 func (note Note) fileName() string {
 	datePrefix := note.Meta.CreatedAt.Format("2006/01/02")
 
-	return os.Getenv("ZET_HOME") +
+	return getConfiguration().Home +
 		"/content/" +
 		datePrefix +
 		"/" +
