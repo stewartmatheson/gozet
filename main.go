@@ -31,17 +31,36 @@ func main() {
 
 	if len(args) < 1 {
 		log.Fatalln("Must pass at least one arg")
-		os.Exit(1)
 	}
 
 	if args[0] == "render" && len(args) > 1 {
-		note := read(args[1])
-		fmt.Print(string(render(note)))
+		note, err := read(args[1])
+		if err != nil {
+			panic(err)
+		}
+
+		noteContent, noteRenderErr := render(*note)
+
+		if noteRenderErr != nil {
+			panic(err)
+		}
+
+		fmt.Print(string(noteContent))
 		os.Exit(0)
 	}
 
 	if args[0] == "create" {
 		createTestNote()
+		os.Exit(0)
+	}
+
+	if args[0] == "list" {
+		fmt.Println(all())
+		os.Exit(0)
+	}
+
+	if args[0] == "build" {
+		build(all())
 		os.Exit(0)
 	}
 

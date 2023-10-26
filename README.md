@@ -11,3 +11,6 @@ A second attempt at zettelkasten notes this time in golang. Golang is nice becau
  * Convert markdown code blocks to good looking html code blocks
  * Publish to WWW using S3.
 
+# TODO
+ * Don't rewrite files that have not changed. This will save with sync time.
+

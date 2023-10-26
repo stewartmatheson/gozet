@@ -11,11 +11,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func read(fileName string) Note {
+func read(fileName string) (*Note, error) {
 	file, err := os.Open(fileName)
 
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	defer file.Close()
@@ -45,13 +45,13 @@ func read(fileName string) Note {
 	yamlErr := yaml.Unmarshal([]byte(strings.Join(metadata, "\n")), &meta)
 
 	if yamlErr != nil {
-		panic(yamlErr)
+		return nil, yamlErr
 	}
 
-	return Note{
+	return &Note{
 		Body: strings.Join(content, "\n"),
 		Meta: meta,
-	}
+	}, nil
 }
 
 type Meta struct {
@@ -105,12 +105,14 @@ func (note Note) slug() string {
 	return strings.ToLower(strings.ReplaceAll(note.Meta.Title, " ", "-"))
 }
 
-func (note Note) fileName() string {
-	datePrefix := note.Meta.CreatedAt.Format("2006/01/02")
+func (note Note) fileDatePrefix() string {
+	return note.Meta.CreatedAt.Format("2006/01/02")
+}
 
+func (note Note) fileName() string {
 	return getConfiguration().Home +
 		"/content/" +
-		datePrefix +
+		note.fileDatePrefix() +
 		"/" +
 		note.slug() +
 		".md"

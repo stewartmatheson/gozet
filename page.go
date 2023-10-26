@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"log"
+	"strings"
 	"text/template"
 
 	"github.com/gomarkdown/markdown"
@@ -21,24 +21,30 @@ func renderBody(note Note) []byte {
 }
 
 type Page struct {
-	Body string
+	Body     string
+	Keywords string
+	Title    string
 }
 
-func render(note Note) []byte {
-	page := Page{Body: string(renderBody(note))}
+func render(note Note) ([]byte, error) {
+	page := Page{
+		Body:     string(renderBody(note)),
+		Keywords: strings.Join(note.Meta.Tags, ", "),
+		Title:    note.Meta.Title,
+	}
 	templateFile := getConfiguration().Home + "/templates/index.html"
 	template, err := template.New("index.html").ParseFiles(templateFile)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	buf := new(bytes.Buffer)
 	err = template.Execute(buf, page)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return buf.Bytes()
+	return buf.Bytes(), nil
 }
