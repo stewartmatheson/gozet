@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func all() []string {
+func allFiles() []string {
 	contentPath := getConfiguration().Home + "/content"
 	var files []string
 	err := filepath.Walk(contentPath,
@@ -25,6 +25,20 @@ func all() []string {
 	}
 
 	return files
+}
+
+func allNotes() []Note {
+	files := allFiles()
+	var notes []Note
+	for _, noteFile := range files {
+		note, err := read(noteFile)
+		if err != nil {
+			fmt.Println("Can't parse note: " + noteFile)
+			continue
+		}
+		notes = append(notes, *note)
+	}
+	return notes
 }
 
 func build(files []string) {

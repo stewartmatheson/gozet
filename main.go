@@ -55,12 +55,21 @@ func main() {
 	}
 
 	if args[0] == "list" {
-		fmt.Println(all())
+		fmt.Println(allFiles())
 		os.Exit(0)
 	}
 
 	if args[0] == "build" {
-		build(all())
+		build(allFiles())
+		os.Exit(0)
+	}
+
+	if args[0] == "tags" {
+		allNotes := allNotes()
+		for _, note := range allNotes {
+			fmt.Println(note.Meta.Tags)
+		}
+
 		os.Exit(0)
 	}
 
