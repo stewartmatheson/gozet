@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
-func createTestNote() {
+func createNote(title string) {
 	note := Note{
 		Body: "",
 		Meta: Meta{
-			Tags:      []string{"Note", "Test", "There", "Are", "Lots"},
-			Title:     "This is a sample note",
+			Tags:      []string{},
+			Title:     title,
 			CreatedAt: time.Now(),
 		},
 	}
@@ -50,7 +51,8 @@ func main() {
 	}
 
 	if args[0] == "create" {
-		createTestNote()
+		// Join the remaining args together.
+		createNote(strings.Join(args[1:], " "))
 		os.Exit(0)
 	}
 
