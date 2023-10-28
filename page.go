@@ -20,19 +20,43 @@ func renderBody(note Note) []byte {
 	return markdown.Render(doc, renderer)
 }
 
+type RelatedNote struct {
+	Link  string
+	Title string
+}
+
 type Page struct {
 	Body     string
 	Keywords string
 	Title    string
-	Related  []Note
+	Related  []RelatedNote
+}
+
+func buildLink(note Note) string {
+	return "/" +
+		note.fileDatePrefix() +
+		"/" +
+		note.slug() +
+		".html"
 }
 
 func render(note Note) ([]byte, error) {
+	notes := findRelatedNotes(note)
+	relatedNotes := make([]RelatedNote, 0, len(notes))
+
+	for _, note := range notes {
+		relatedNote := RelatedNote{
+			Link:  buildLink(note),
+			Title: note.Meta.Title,
+		}
+		relatedNotes = append(relatedNotes, relatedNote)
+	}
+
 	page := Page{
 		Body:     string(renderBody(note)),
 		Keywords: strings.Join(note.Meta.Tags, ", "),
 		Title:    note.Meta.Title,
-		Related:  findRelatedNotes(note),
+		Related:  relatedNotes,
 	}
 	templateFile := getConfiguration().Home + "/templates/index.html"
 	template, err := template.New("index.html").ParseFiles(templateFile)
