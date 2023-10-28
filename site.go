@@ -5,7 +5,64 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
+
+	"slices"
 )
+
+func createOrGetNote(title string) (string, error) {
+	note := Note{
+		Body: "",
+		Meta: Meta{
+			Tags:      []string{},
+			Title:     title,
+			CreatedAt: time.Now(),
+		},
+	}
+
+	found, fileName := findNoteBySlug(note.slug())
+
+	if found {
+		return fileName, nil
+	}
+
+	fileName, err := note.create()
+
+	if err != nil {
+		return "", err
+	}
+
+	return fileName, nil
+}
+
+func findNoteBySlug(slug string) (bool, string) {
+	for _, note := range allNotes() {
+		if note.slug() == slug {
+			return true, note.fileName()
+		}
+	}
+	return false, ""
+}
+
+func findRelatedNotes(note Note) []Note {
+	realtedNotes := make(map[string]Note)
+	for _, currentNote := range allNotes() {
+		if currentNote.slug() == note.slug() {
+			continue
+		}
+		for _, tag := range currentNote.Meta.Tags {
+			if slices.Contains(note.Meta.Tags, tag) {
+				realtedNotes[currentNote.slug()] = currentNote
+			}
+		}
+	}
+
+	notes := make([]Note, 0, len(realtedNotes))
+	for _, relatedNote := range realtedNotes {
+		notes = append(notes, relatedNote)
+	}
+	return notes
+}
 
 func allFiles() []string {
 	contentPath := getConfiguration().Home + "/content"
@@ -60,6 +117,7 @@ func build(files []string) {
 
 		if err != nil {
 			fmt.Println("Can't render note: " + noteFile)
+			fmt.Println(err)
 			continue
 		}
 

@@ -24,6 +24,7 @@ type Page struct {
 	Body     string
 	Keywords string
 	Title    string
+	Related  []Note
 }
 
 func render(note Note) ([]byte, error) {
@@ -31,6 +32,7 @@ func render(note Note) ([]byte, error) {
 		Body:     string(renderBody(note)),
 		Keywords: strings.Join(note.Meta.Tags, ", "),
 		Title:    note.Meta.Title,
+		Related:  findRelatedNotes(note),
 	}
 	templateFile := getConfiguration().Home + "/templates/index.html"
 	template, err := template.New("index.html").ParseFiles(templateFile)

@@ -5,27 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 )
-
-func createNote(title string) {
-	note := Note{
-		Body: "",
-		Meta: Meta{
-			Tags:      []string{},
-			Title:     title,
-			CreatedAt: time.Now(),
-		},
-	}
-
-	fileName, err := note.create()
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(fileName)
-}
 
 func main() {
 	args := os.Args[1:]
@@ -50,14 +30,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	if args[0] == "create" {
-		// Join the remaining args together.
-		createNote(strings.Join(args[1:], " "))
+	if args[0] == "note" {
+		fileName, err := createOrGetNote(strings.Join(args[1:], " "))
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(fileName)
 		os.Exit(0)
 	}
 
 	if args[0] == "list" {
-		fmt.Println(allFiles())
+		for _, noteFileName := range allFiles() {
+			fmt.Println(noteFileName)
+		}
 		os.Exit(0)
 	}
 
@@ -76,5 +61,4 @@ func main() {
 	}
 
 	log.Fatalln("Unknown Param " + args[0])
-	os.Exit(1)
 }
