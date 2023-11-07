@@ -20,7 +20,7 @@ func main() {
 			panic(err)
 		}
 
-		noteContent, noteRenderErr := render(*note)
+		noteContent, noteRenderErr := note.render()
 
 		if noteRenderErr != nil {
 			panic(err)
@@ -40,14 +40,14 @@ func main() {
 	}
 
 	if args[0] == "list" {
-		for _, noteFileName := range allFiles() {
+		for _, noteFileName := range allNoteFiles() {
 			fmt.Println(noteFileName)
 		}
 		os.Exit(0)
 	}
 
 	if args[0] == "build" {
-		build(allFiles())
+		write()
 		os.Exit(0)
 	}
 

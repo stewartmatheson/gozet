@@ -13,4 +13,5 @@ A second attempt at zettelkasten notes this time in golang. Golang is nice becau
 
 # TODO
  * Don't rewrite files that have not changed. This will save with sync time.
+ * CDK
 
