@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+type IndexPageData struct {
+	Notes []Note
+}
+
 func main() {
 	args := os.Args[1:]
 
@@ -14,23 +18,7 @@ func main() {
 		log.Fatalln("Must pass at least one arg")
 	}
 
-	if args[0] == "render" && len(args) > 1 {
-		note, err := read(args[1])
-		if err != nil {
-			panic(err)
-		}
-
-		noteContent, noteRenderErr := note.render()
-
-		if noteRenderErr != nil {
-			panic(err)
-		}
-
-		fmt.Print(string(noteContent))
-		os.Exit(0)
-	}
-
-	if args[0] == "note" {
+	if args[0] == "touch" {
 		fileName, err := createOrGetNote(strings.Join(args[1:], " "))
 		if err != nil {
 			panic(err)
@@ -39,7 +27,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if args[0] == "list" {
+	if args[0] == "ls" {
 		for _, noteFileName := range allNoteFiles() {
 			fmt.Println(noteFileName)
 		}
@@ -47,7 +35,17 @@ func main() {
 	}
 
 	if args[0] == "build" {
-		write()
+		build(Page{
+			Name: "index",
+			Data: IndexPageData{
+				Notes: allNotes(),
+			},
+		})
+
+		for _, note := range allNotes() {
+			build(note)
+		}
+
 		os.Exit(0)
 	}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -10,7 +9,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/gomarkdown/markdown"
@@ -53,7 +51,7 @@ func findNoteBySlug(slug string) (bool, string) {
 	return false, ""
 }
 
-func findRelatedNotes(note Note) []Note {
+func (note Note) relatedNotes() []Note {
 	realtedNotes := make(map[string]Note)
 	for _, currentNote := range allNotes() {
 		if currentNote.slug() == note.slug() {
@@ -161,6 +159,7 @@ type Note struct {
 	Meta Meta
 }
 
+// This method should just panic
 func (note Note) create() (path string, err error) {
 	os.MkdirAll(
 		filepath.Dir(note.fileName()),
@@ -207,63 +206,46 @@ func (note Note) fileDatePrefix() string {
 
 func (note Note) fileName() string {
 	return getConfiguration().Home +
-		"/content/" +
+		"/notes/" +
 		note.fileDatePrefix() +
 		"/" +
 		note.slug() +
 		".md"
 }
 
-func (note Note) save() {
-	file, err := os.Create(note.fileName())
-	if err != nil {
-		panic(err)
-	}
-
-	defer file.Close()
-}
-
-type RelatedNote struct {
-	Link  string
-	Title string
-}
-
-type NoteRenderTemplate struct {
-	Body    []byte
-	Related []RelatedNote
-}
-
-func (note Note) linkTo() string {
-	return "/" +
+func (note Note) LinkTo() string {
+	return "/notes/" +
 		note.fileDatePrefix() +
 		"/" +
 		note.slug() +
 		".html"
 }
 
-func (note Note) render() ([]byte, error) {
-	notes := findRelatedNotes(note)
-	relatedNotes := make([]RelatedNote, 0, len(notes))
+func (note Note) buildPath() string {
+	return getConfiguration().Home + "/build" + note.LinkTo()
+}
 
-	for _, note := range notes {
-		relatedNote := RelatedNote{
-			Link:  note.linkTo(),
-			Title: note.Meta.Title,
-		}
-		relatedNotes = append(relatedNotes, relatedNote)
+func (note Note) templatePaths() []string {
+	return []string{
+		getConfiguration().Home + "/templates/base.html",
+		getConfiguration().Home + "/templates/note.html",
 	}
+}
 
-	noteIndexFile := getConfiguration().Home + "/templates/note.html"
-	template, err := template.New("note.html").ParseFiles(noteIndexFile)
+type NoteTemplateData struct {
+	Body    string
+	Related []Note
+}
 
-	noteTemplateData := NoteRenderTemplate{
-		Body:    note.renderBody(),
-		Related: relatedNotes,
+func (note Note) templateData() BuildableTemplateData {
+	return BuildableTemplateData{
+		Title:    note.Meta.Title,
+		Keywords: note.Meta.Tags,
+		Data: NoteTemplateData{
+			Body:    string(note.renderBody()),
+			Related: note.relatedNotes(),
+		},
 	}
-
-	noteBodyBuffer := new(bytes.Buffer)
-	err = template.Execute(noteBodyBuffer, noteTemplateData)
-	return noteBodyBuffer.Bytes(), err
 }
 
 func (note Note) renderBody() []byte {
